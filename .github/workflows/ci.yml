@@ -45,13 +45,9 @@ jobs:
           echo "VIRTUAL_ENV=$(pwd)/.venv" >> $GITHUB_ENV
           echo "$(pwd)/.venv/bin" >> $GITHUB_PATH
       - name: Install
-        env:
-          PLUGIN: ${{ matrix.plugin }}
         run: |
-          cd "${GITHUB_WORKSPACE}/${PLUGIN}"
+          cd "${GITHUB_WORKSPACE}/${{ matrix.plugin }}"
           pip install -e .
       - name: Test
-        env:
-          PLUGIN: ${{ matrix.plugin }}
         run: |
-          pytest "${GITHUB_WORKSPACE}/${PLUGIN}"
+          pytest "${GITHUB_WORKSPACE}/${{ matrix.plugin }}"
