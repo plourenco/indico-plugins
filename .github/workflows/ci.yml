@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - ci
+      - test-ci
   pull_request:
     branches:
       - master
@@ -31,7 +31,9 @@ jobs:
           python-version: 3.9
       - name: Get branch name (base or pull_request)
         shell: bash
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF:-${GITHUB_REF}} | sed 's/.*\///')" >> $$GITHUB_ENV
+        run: |
+          echo $(echo ${GITHUB_HEAD_REF:-${GITHUB_REF}} | sed 's/.*\///')
+          echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF:-${GITHUB_REF}} | sed 's/.*\///')" >> $GITHUB_ENV
       - name: Install python dependencies
         if: steps.cache-pip.outputs.cache-hit != 'true'
         run: |
@@ -39,7 +41,7 @@ jobs:
           source .venv/bin/activate
           pip install -U pip setuptools
           pip install wheel
-          pip install -e git+https://github.com/indico/indico.git@${BRANCH_NAME}#egg=indico
+          pip install -e git+https://github.com/indico/indico.git@master#egg=indico
       - name: Activate virtualenv for later steps
         run: |
           echo "VIRTUAL_ENV=$(pwd)/.venv" >> $GITHUB_ENV
