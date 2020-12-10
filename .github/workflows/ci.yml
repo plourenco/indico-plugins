@@ -29,14 +29,9 @@ jobs:
         if: steps.cache-pip.outputs.cache-hit != 'true'
         with:
           python-version: 3.9
-      - name: Get branch name (base)
-        if: github.event_name != 'pull_request'
+      - name: Get branch name (base or pull_request)
         shell: bash
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF} | sed 's/.*\///')" >> $GITHUB_ENV
-      - name: Get branch name (pull request)
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | sed 's/.*\///')" >> $GITHUB_ENV
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF:-${GITHUB_REF}} | sed 's/.*\///')" >> $$GITHUB_ENV
       - name: Install python dependencies
         if: steps.cache-pip.outputs.cache-hit != 'true'
         run: |
