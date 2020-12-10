@@ -12,6 +12,14 @@ on:
 jobs:
   install:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:11
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     strategy:
       matrix:
         include:
@@ -50,6 +58,17 @@ jobs:
         run: |
           cd "${GITHUB_WORKSPACE}/${{ matrix.plugin }}"
           pip install -e .
+      - name: Setup database
+        run: |
+          sudo apt-get install postgresql-client libpq-dev
+          export PGHOST=localhost
+          export PGPORT=${{ job.services.postgres.ports[5432] }}
+          export PGUSER=postgres
+          createuser indicotest
+          createdb -O indicotest indicotest
+          psql indicotest -c 'CREATE EXTENSION unaccent;'
+          psql indicotest -c 'CREATE EXTENSION pg_trgm;'
       - name: Test
         run: |
-          pytest "${GITHUB_WORKSPACE}/${{ matrix.plugin }}"
+          export INDICO_TEST_DATABASE_URI="postgresql://indicotest@localhost:${{ job.services.postgres.ports[5432] }}/indicotest"
+          pytest --color=yes "${GITHUB_WORKSPACE}/${{ matrix.plugin }}"
