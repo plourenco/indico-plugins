@@ -145,10 +145,14 @@ class VidyoPlugin(VCPluginMixin, IndicoPlugin):
                         room
         :param event: Event -- The event to the Vidyo room will be attached
         """
+        from indico.modules.groups import GroupProxy
         client = AdminClient(self.settings)
         owner = retrieve_principal(vc_room.data['owner'])
         login_gen = iter_user_identities(owner)
         login = next(login_gen, None)
+        if session.user not in GroupProxy('indico-team', 'cern-ldap'):
+            raise VCRoomError("Vidyo room creation is no longer possible - "
+                              "please see <a href=\"https://cern.service-now.com/service-portal/?id=outage&n=OTG0060720\">OTG0060720</a> for details", field='name')
         if login is None:
             raise VCRoomError(_("No valid Vidyo account found for this user"), field='owner_user')
 
